@@ -133,6 +133,9 @@ function collidesWithWall(entity, dir, distance) {
 }
 
 function drawMap() {
+  // Use current time to create a smooth pulsing animation
+  const pulse = Math.sin(performance.now() * 0.006);
+
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
       const tile = map[y][x];
@@ -140,24 +143,49 @@ function drawMap() {
       const py = y * TILE + HUD_HEIGHT;
 
       if (tile === '#') {
-        ctx.fillStyle = '#0f1d72';
+        // VHS Neon Magenta Walls
+        ctx.fillStyle = '#230b3b';
         ctx.fillRect(px, py, TILE, TILE);
-        ctx.strokeStyle = '#2946df';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#ff2a85';
+        ctx.lineWidth = 2;
         ctx.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2);
       } else {
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = '#080212';
         ctx.fillRect(px, py, TILE, TILE);
 
-        // --- NEW PELLET DRAWING CODE ---
+        const cx = px + TILE / 2;
+        const cy = py + TILE / 2;
+
         if (tile === '.') {
-          ctx.fillStyle = '#ff2a85'; // Pink 8-bit pellet
-          ctx.fillRect(px + TILE / 2 - 3, py + TILE / 2 - 3, 6, 6); 
+          // --- GLOWING NEON PINK ORB ---
+          ctx.shadowColor = '#ff2a85';
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = '#ff7bb3';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3.5 + pulse * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0; // Reset glow filter
+
         } else if (tile === 'o') {
-          ctx.fillStyle = '#00f0ff'; // Cyan 8-bit power pellet
-          ctx.fillRect(px + TILE / 2 - 6, py + TILE / 2 - 6, 12, 12); 
+          // --- PULSING CYAN SYNTHWAVE STAR ---
+          const size = 8 + pulse * 2;
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 14;
+          ctx.fillStyle = '#ffffff';
+
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - size);
+          ctx.lineTo(cx + size * 0.35, cy - size * 0.35);
+          ctx.lineTo(cx + size, cy);
+          ctx.lineTo(cx + size * 0.35, cy + size * 0.35);
+          ctx.lineTo(cx, cy + size);
+          ctx.lineTo(cx - size * 0.35, cy + size * 0.35);
+          ctx.lineTo(cx - size, cy);
+          ctx.lineTo(cx - size * 0.35, cy - size * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0; // Reset glow filter
         }
-        // --------------------------------
       }
     }
   }
