@@ -149,17 +149,15 @@ function drawMap() {
         ctx.fillStyle = '#000';
         ctx.fillRect(px, py, TILE, TILE);
 
+        // --- NEW PELLET DRAWING CODE ---
         if (tile === '.') {
-          ctx.fillStyle = '#f8f0a7';
-          ctx.beginPath();
-          ctx.arc(px + TILE / 2, py + TILE / 2, 3, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = '#ff2a85'; // Pink 8-bit pellet
+          ctx.fillRect(px + TILE / 2 - 3, py + TILE / 2 - 3, 6, 6); 
         } else if (tile === 'o') {
-          ctx.fillStyle = '#fff';
-          ctx.beginPath();
-          ctx.arc(px + TILE / 2, py + TILE / 2, 6, 0, Math.PI * 2);
-          ctx.fill();
+          ctx.fillStyle = '#00f0ff'; // Cyan 8-bit power pellet
+          ctx.fillRect(px + TILE / 2 - 6, py + TILE / 2 - 6, 12, 12); 
         }
+        // --------------------------------
       }
     }
   }
