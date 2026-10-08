@@ -225,28 +225,65 @@ function drawMap() {
           const bcX = labelX + labelW - 8;
           if (labelW > 24) {
             ctx.fillStyle = '#000000';
-function drawPacman(time) {
-  const speedFactor = Math.hypot(player.dir.x, player.dir.y);
-  player.mouth = 0.18 + Math.abs(Math.sin(time * 0.012)) * 0.24 * speedFactor;
+            ctx.fillRect(bcX, labelY + 5, 1, 8);
+            ctx.fillRect(bcX + 2, labelY + 5, 1, 8);
+            ctx.fillRect(bcX + 4, labelY + 5, 1, 8);
+            ctx.fillRect(bcX + 6, labelY + 5, 1, 8);
+          }
 
-  let angle = 0;
-  if (player.dir.x === 1) angle = 0;
-  else if (player.dir.x === -1) angle = Math.PI;
-  else if (player.dir.y === -1) angle = -Math.PI / 2;
-  else if (player.dir.y === 1) angle = Math.PI / 2;
+          // 7. Right Reel Slot / Lock Notch
+          ctx.fillStyle = '#06060a';
+          ctx.fillRect(px + w - 6, py + 3, 3, h - 7);
+          ctx.fillStyle = '#1c1c28';
+          ctx.fillRect(px + w - 5, py + 6, 1, h - 13);
 
-  ctx.fillStyle = '#ffd84a';
-  ctx.beginPath();
-  ctx.moveTo(player.x, player.y);
-  ctx.arc(
-    player.x,
-    player.y,
-    player.radius,
-    angle + player.mouth,
-    angle - player.mouth + Math.PI * 2
-  );
-  ctx.closePath();
-  ctx.fill();
+          curX += span;
+          remaining -= span;
+        }
+
+      } else {
+        // Floor & Pellets
+        const px = x * TILE;
+        const py = y * TILE + HUD_HEIGHT;
+        ctx.fillStyle = '#080212';
+        ctx.fillRect(px, py, TILE, TILE);
+
+        const cx = px + TILE / 2;
+        const cy = py + TILE / 2;
+
+        if (tile === '.') {
+          ctx.shadowColor = '#ff2a85';
+          ctx.shadowBlur = 6;
+          ctx.fillStyle = '#ff7bb3';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+        } else if (tile === 'o') {
+          const size = 8 + pulse * 2;
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = '#ffffff';
+
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - size);
+          ctx.lineTo(cx + size * 0.35, cy - size * 0.35);
+          ctx.lineTo(cx + size, cy);
+          ctx.lineTo(cx + size * 0.35, cy + size * 0.35);
+          ctx.lineTo(cx, cy + size);
+          ctx.lineTo(cx - size * 0.35, cy + size * 0.35);
+          ctx.lineTo(cx - size, cy);
+          ctx.lineTo(cx - size * 0.35, cy - size * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        x++;
+      }
+    }
+  }
 }
 
 function drawGhost(ghost) {
