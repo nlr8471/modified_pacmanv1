@@ -1,44 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pac-Man (VHS Edition)</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="game-wrap">
-      <!-- VHS Outer Box Frame -->
-      <div class="vhs-box">
-        <div class="vhs-header">
-          <span class="vhs-badge">VHS</span>
-          <span class="vhs-format">NTSC • SP MODE</span>
-          <span class="vhs-badge hi-fi">HI-FI STEREO</span>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VHS Pac-Man</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-        <div class="vhs-rainbow-stripe"></div>
+  <div class="vhs-box">
+    <div id="score">Score: 0</div>
+    <div id="lives">Lives: 3</div>
+    <div id="state">Press Arrow Keys to Start</div>
 
-        <div class="hud" id="hud">
-          <span id="score">Score: 0</span>
-          <span id="lives">Lives: 3</span>
-          <span id="state">Press Arrow Keys to Start</span>
-        </div>
+    <canvas id="gameCanvas"></canvas>
 
-        <!-- Canvas Frame / CRT Screen Area -->
-        <div class="vhs-screen-wrap">
-          <canvas id="gameCanvas" width="560" height="620" aria-label="Pac-Man game canvas"></canvas>
-          <div class="vhs-glare"></div>
-        </div>
+    <button id="playAgainBtn" hidden>Play Again</button>
+  </div>
 
-        <div class="vhs-footer">
-          <span class="vhs-tag">T-120 RETRO ARCADE SERIES</span>
-          <span class="vhs-rating">RATED: AUTO-PLAY</span>
-        </div>
-      </div>
-
-      <button id="playAgainBtn" class="play-again-btn" hidden>Play Again</button>
-      <p class="help">Controls: Arrow keys or WASD • Refresh to restart</p>
-    </main>
-    <script src="game.js"></script>
-  </body>
+  <!-- script MUST be placed at the bottom of <body> or use defer -->
+  <script src="game.js"></script>
+</body>
 </html>
