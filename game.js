@@ -65,7 +65,6 @@ const player = {
   speed: 130,
   dir: { ...DIRS.left },
   nextDir: { ...DIRS.left },
-  mouth: 0,
   lives: 3,
   score: 0
 };
@@ -133,75 +132,109 @@ function collidesWithWall(entity, dir, distance) {
 function drawMap() {
   const pulse = Math.sin(performance.now() * 0.006);
 
-  const tapePalettes = [
-    { labelBg: '#f2ece1', stripe: '#ff2a85', text: '#180028', badge: '#ff2a85' },
-    { labelBg: '#e6f4f8', stripe: '#00f0ff', text: '#002636', badge: '#00f0ff' },
-    { labelBg: '#f8f1de', stripe: '#f59e0b', text: '#2e1d00', badge: '#f59e0b' },
-    { labelBg: '#f0e6f8', stripe: '#a855f7', text: '#21003d', badge: '#a855f7' },
-    { labelBg: '#e6f7ef', stripe: '#10b981', text: '#002b1c', badge: '#10b981' }
-  ];
-
   for (let y = 0; y < ROWS; y++) {
-    let x = 0;
-    while (x < COLS) {
+    for (let x = 0; x < COLS; x++) {
       const tile = map[y][x];
+      const px = x * TILE;
+      const py = y * TILE + HUD_HEIGHT;
 
       if (tile === '#') {
-        const runStart = x;
-        while (x < COLS && map[y][x] === '#') {
-          x++;
-        }
-        const runLen = x - runStart;
+        // Simple, clean neon grid walls
+        ctx.fillStyle = '#230b3b';
+        ctx.fillRect(px, py, TILE, TILE);
+        ctx.strokeStyle = '#ff2a85';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2);
+      } else {
+        ctx.fillStyle = '#080212';
+        ctx.fillRect(px, py, TILE, TILE);
 
-        let remaining = runLen;
-        let curX = runStart;
+        const cx = px + TILE / 2;
+        const cy = py + TILE / 2;
 
-        while (remaining > 0) {
-          const span = (remaining === 4) ? 2 : (remaining >= 3 ? 3 : remaining);
-          
-          const px = curX * TILE;
-          const py = y * TILE + HUD_HEIGHT;
-          const w = span * TILE;
-          const h = TILE;
-
-          const palette = tapePalettes[(y * 7 + curX * 3) % tapePalettes.length];
-
-          ctx.fillStyle = '#101018';
-          ctx.fillRect(px, py, w, h);
-
-          ctx.fillStyle = '#3a3a4e';
-          ctx.fillRect(px, py, w, 1);
-          ctx.fillStyle = '#040406';
-          ctx.fillRect(px, py + h - 2, w, 2);
-          ctx.fillRect(px + w - 2, py, 2, h);
-
-          ctx.fillStyle = '#06060a';
-          ctx.fillRect(px + 1, py + 2, 2, h - 4);
-          ctx.fillStyle = '#222230';
-          ctx.fillRect(px + 1, py + 4, 2, 2);
-          ctx.fillRect(px + 1, py + 10, 2, 2);
-          ctx.fillRect(px + 1, py + 16, 2, 2);
-
-          const labelX = px + 5;
-          const labelY = py + 3;
-          const labelW = w - 12;
-          const labelH = h - 7;
-
-          ctx.fillStyle = palette.labelBg;
-          ctx.fillRect(labelX, labelY, labelW, labelH);
-
-          ctx.fillStyle = palette.stripe;
-          ctx.fillRect(labelX, labelY, labelW, 3);
-
-          ctx.fillStyle = palette.badge;
-          ctx.fillRect(labelX + 2, labelY + 5, 8, 6);
+        if (tile === '.') {
+          // Glowing pink dot
+          ctx.shadowColor = '#ff2a85';
+          ctx.shadowBlur = 6;
+          ctx.fillStyle = '#ff7bb3';
+          ctx.beginPath();
+          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        } else if (tile === 'o') {
+          // Pulsing cyan power star
+          const size = 8 + pulse * 2;
+          ctx.shadowColor = '#00f0ff';
+          ctx.shadowBlur = 12;
           ctx.fillStyle = '#ffffff';
-          ctx.fillRect(labelX + 3, labelY + 6, 2, 2);
-          ctx.fillRect(labelX + 5, labelY + 8, 2, 2);
-          ctx.fillRect(labelX + 7, labelY + 6, 2, 2);
 
-          const titleX = labelX + 12;
-          const titleMaxW = labelW - 22;
-          if (titleMaxW > 8) {
-            ctx.fillStyle = palette.text;
-            ctx.fillRect(titleX, labelY + 5, Math.min(titleMaxW, 3
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - size);
+          ctx.lineTo(cx + size * 0.35, cy - size * 0.35);
+          ctx.lineTo(cx + size, cy);
+          ctx.lineTo(cx + size * 0.35, cy + size * 0.35);
+          ctx.lineTo(cx, cy + size);
+          ctx.lineTo(cx - size * 0.35, cy + size * 0.35);
+          ctx.lineTo(cx - size, cy);
+          ctx.lineTo(cx - size * 0.35, cy - size * 0.35);
+          ctx.closePath();
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+    }
+  }
+}
+
+function drawPacman(time) {
+  const radius = player.radius;
+  const mouthAngle = 0.2 * (1 + Math.sin(time * 0.01));
+
+  let angle = 0;
+  if (player.dir === DIRS.right) angle = 0;
+  if (player.dir === DIRS.down) angle = Math.PI / 2;
+  if (player.dir === DIRS.left) angle = Math.PI;
+  if (player.dir === DIRS.up) angle = -Math.PI / 2;
+
+  ctx.fillStyle = '#ffd84a';
+  ctx.beginPath();
+  ctx.arc(
+    player.x,
+    player.y,
+    radius,
+    angle + mouthAngle,
+    angle + Math.PI * 2 - mouthAngle
+  );
+  ctx.lineTo(player.x, player.y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawGhost(ghost) {
+  const r = ghost.radius;
+  const x = ghost.x;
+  const y = ghost.y;
+
+  ctx.fillStyle = ghost.color;
+  ctx.beginPath();
+  ctx.arc(x, y - r * 0.1, r, Math.PI, 0);
+  ctx.lineTo(x + r, y + r);
+
+  for (let i = 0; i < 3; i++) {
+    const sx = x + r - ((i + 1) * 2 * r) / 3;
+    ctx.quadraticCurveTo(sx + r / 6, y + r * 0.6, sx - r / 3, y + r);
+  }
+
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.arc(x - r * 0.35, y - r * 0.1, r * 0.22, 0, Math.PI * 2);
+  ctx.arc(x + r * 0.35, y - r * 0.1, r * 0.22, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#1b2a6d';
+  ctx.beginPath();
+  ctx.arc(x - r * 0.3, y - r * 0.08, r * 0.1, 0, Math.PI * 2);
+  ctx.arc(x + r * 0.4, y - r * 0.08, r
