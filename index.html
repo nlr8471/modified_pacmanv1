@@ -10,11 +10,45 @@
 <body>
 
   <div class="vhs-box">
-    <div id="score">Score: 0</div>
-    <div id="lives">Lives: 3</div>
-    <div id="state">Press Arrow Keys to Start</div>
+    
+    <div class="vhs-inner">
+      <!-- Left Spool Window -->
+      <div class="spool-window">
+        <div class="spool-gear"></div>
+      </div>
 
-    <canvas id="gameCanvas"></canvas>
+      <!-- Center Game Screen -->
+      <div class="screen-container">
+        
+        <!-- Retro Header Bar -->
+        <div class="vhs-status-bar">
+          <span class="badge-vtr">VTR</span>
+          <span>NTSC • SP MODE</span>
+          <span class="badge-stereo">HI-FI STEREO</span>
+        </div>
+
+        <!-- Game HUD -->
+        <div class="hud-bar">
+          <div id="score">Score: 0</div>
+          <div id="lives">Lives: 3</div>
+          <div id="state">Press Arrow Keys to Start</div>
+        </div>
+
+        <!-- Game Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Controls Legend Footer -->
+        <div class="controls-footer">
+          Controls: Arrow keys or WASD • Refresh to restart
+        </div>
+      </div>
+
+      <!-- Right Spool Window -->
+      <div class="spool-window">
+        <div class="spool-gear"></div>
+        <div class="side-lives-label">Lives 3</div>
+      </div>
+    </div>
 
     <button id="playAgainBtn" hidden>Play Again</button>
   </div>
