@@ -133,8 +133,10 @@ function collidesWithWall(entity, dir, distance) {
 }
 
 function drawMap() {
-  // Use current time to create a smooth pulsing animation
   const pulse = Math.sin(performance.now() * 0.006);
+
+  // Colorful retro sticker labels for tape spines
+  const spineColors = ['#ff2a85', '#00f0ff', '#ffe16b', '#a855f7', '#ff5e5e', '#38ef7d'];
 
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -143,13 +145,40 @@ function drawMap() {
       const py = y * TILE + HUD_HEIGHT;
 
       if (tile === '#') {
-        // VHS Neon Magenta Walls
-        ctx.fillStyle = '#230b3b';
+        // --- STACKED VHS TAPES WALLS ---
+        ctx.fillStyle = '#080212';
         ctx.fillRect(px, py, TILE, TILE);
-        ctx.strokeStyle = '#ff2a85';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2);
+
+        // Draw 2 stacked VHS spines per 28px tile (14px height each)
+        for (let i = 0; i < 2; i++) {
+          const ty = py + i * 14;
+          // Pick label color based on tile position to make a colorful cassette shelf
+          const colorIndex = (y * 2 + i + x * 3) % spineColors.length;
+          const labelColor = spineColors[colorIndex];
+
+          // 1. Black Plastic Cassette Casing
+          ctx.fillStyle = '#181820';
+          ctx.fillRect(px, ty, TILE, 13);
+
+          // 2. Plastic Ridge / Shadow Gap Between Tapes
+          ctx.fillStyle = '#050508';
+          ctx.fillRect(px, ty + 12, TILE, 2);
+
+          // 3. Colored Spine Sticker Label
+          ctx.fillStyle = labelColor;
+          ctx.fillRect(px + 1, ty + 3, TILE - 2, 7);
+
+          // 4. White Spine Text / Title Line
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.fillRect(px + 3, ty + 5, TILE - 8, 2);
+
+          // 5. Tape Reel Notch on Side
+          ctx.fillStyle = '#08080c';
+          ctx.fillRect(px + TILE - 4, ty + 3, 2, 7);
+        }
+
       } else {
+        // --- FLOOR & PELLETS ---
         ctx.fillStyle = '#080212';
         ctx.fillRect(px, py, TILE, TILE);
 
@@ -157,20 +186,20 @@ function drawMap() {
         const cy = py + TILE / 2;
 
         if (tile === '.') {
-          // --- GLOWING NEON PINK ORB ---
+          // Standard glowing dots
           ctx.shadowColor = '#ff2a85';
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 6;
           ctx.fillStyle = '#ff7bb3';
           ctx.beginPath();
-          ctx.arc(cx, cy, 3.5 + pulse * 0.8, 0, Math.PI * 2);
+          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.shadowBlur = 0; // Reset glow filter
+          ctx.shadowBlur = 0;
 
         } else if (tile === 'o') {
-          // --- PULSING CYAN SYNTHWAVE STAR ---
+          // Pulsing synthwave power stars
           const size = 8 + pulse * 2;
           ctx.shadowColor = '#00f0ff';
-          ctx.shadowBlur = 14;
+          ctx.shadowBlur = 12;
           ctx.fillStyle = '#ffffff';
 
           ctx.beginPath();
@@ -184,13 +213,12 @@ function drawMap() {
           ctx.lineTo(cx - size * 0.35, cy - size * 0.35);
           ctx.closePath();
           ctx.fill();
-          ctx.shadowBlur = 0; // Reset glow filter
+          ctx.shadowBlur = 0;
         }
       }
     }
   }
 }
-
 function drawPacman(time) {
   const speedFactor = Math.hypot(player.dir.x, player.dir.y);
   player.mouth = 0.18 + Math.abs(Math.sin(time * 0.012)) * 0.24 * speedFactor;
