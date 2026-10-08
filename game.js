@@ -135,8 +135,14 @@ function collidesWithWall(entity, dir, distance) {
 function drawMap() {
   const pulse = Math.sin(performance.now() * 0.006);
 
-  // Colorful retro sticker labels for tape spines
-  const spineColors = ['#ff2a85', '#00f0ff', '#ffe16b', '#a855f7', '#ff5e5e', '#38ef7d'];
+  // Retro 8-bit sticker label palette presets
+  const labelPalettes = [
+    { label: '#ece6d8', accent: '#ff2a85', text: '#120024' }, // Neon Pink T-120
+    { label: '#e5dec9', accent: '#00f0ff', text: '#00202e' }, // Electric Cyan
+    { label: '#f4ebd0', accent: '#f59e0b', text: '#2e1c00' }, // Gold Arcade
+    { label: '#dedede', accent: '#10b981', text: '#022c22' }, // Mint Edition
+    { label: '#ebdcf7', accent: '#a855f7', text: '#1e0038' }  // Synth Purple
+  ];
 
   for (let y = 0; y < ROWS; y++) {
     for (let x = 0; x < COLS; x++) {
@@ -145,36 +151,59 @@ function drawMap() {
       const py = y * TILE + HUD_HEIGHT;
 
       if (tile === '#') {
-        // --- STACKED VHS TAPES WALLS ---
-        ctx.fillStyle = '#080212';
+        // --- 8-BIT DETAILED STACKED VHS TAPES ---
+        ctx.fillStyle = '#05020a';
         ctx.fillRect(px, py, TILE, TILE);
 
-        // Draw 2 stacked VHS spines per 28px tile (14px height each)
+        // Draw 2 stacked 14px high cassettes per 28px wall tile
         for (let i = 0; i < 2; i++) {
           const ty = py + i * 14;
-          // Pick label color based on tile position to make a colorful cassette shelf
-          const colorIndex = (y * 2 + i + x * 3) % spineColors.length;
-          const labelColor = spineColors[colorIndex];
+          const palette = labelPalettes[(y * 3 + x * 2 + i) % labelPalettes.length];
 
-          // 1. Black Plastic Cassette Casing
-          ctx.fillStyle = '#181820';
+          // 1. Black Outer Plastic Casing (28x13px)
+          ctx.fillStyle = '#121218';
           ctx.fillRect(px, ty, TILE, 13);
 
-          // 2. Plastic Ridge / Shadow Gap Between Tapes
-          ctx.fillStyle = '#050508';
-          ctx.fillRect(px, ty + 12, TILE, 2);
+          // 2. 8-Bit Bevels (Top Highlight, Bottom Shadow)
+          ctx.fillStyle = '#3a3a4c';
+          ctx.fillRect(px, ty, TILE, 1); // Top light edge
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(px, ty + 12, TILE, 1); // Bottom shadow seam
+          ctx.fillRect(px, ty + 13, TILE, 1); // Gap between stacked tapes
 
-          // 3. Colored Spine Sticker Label
-          ctx.fillStyle = labelColor;
-          ctx.fillRect(px + 1, ty + 3, TILE - 2, 7);
-
-          // 4. White Spine Text / Title Line
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-          ctx.fillRect(px + 3, ty + 5, TILE - 8, 2);
-
-          // 5. Tape Reel Notch on Side
+          // 3. Cassette Side Grip Ribs (Far Left Notch)
           ctx.fillStyle = '#08080c';
-          ctx.fillRect(px + TILE - 4, ty + 3, 2, 7);
+          ctx.fillRect(px + 1, ty + 2, 2, 9);
+          ctx.fillStyle = '#22222c';
+          ctx.fillRect(px + 1, ty + 3, 2, 1);
+          ctx.fillRect(px + 1, ty + 6, 2, 1);
+          ctx.fillRect(px + 1, ty + 9, 2, 1);
+
+          // 4. Paper Sticker Label (Recessed Center)
+          ctx.fillStyle = palette.label;
+          ctx.fillRect(px + 4, ty + 2, 19, 9);
+
+          // 5. Retro Label Accent Stripe
+          ctx.fillStyle = palette.accent;
+          ctx.fillRect(px + 4, ty + 2, 19, 2);
+
+          // 6. 8-Bit Simulated Text / Title Blocks (3x2 pixel blocks)
+          ctx.fillStyle = palette.text;
+          ctx.fillRect(px + 5, ty + 5, 4, 2);  // "VHS" logo block
+          ctx.fillRect(px + 10, ty + 5, 6, 1); // Title text line
+          ctx.fillRect(px + 10, ty + 7, 4, 1); // Subtitle line
+
+          // 7. Simulated Barcode / T-120 Markings (Pixel Dots)
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(px + 17, ty + 5, 1, 3);
+          ctx.fillRect(px + 19, ty + 5, 1, 3);
+          ctx.fillRect(px + 21, ty + 5, 1, 3);
+
+          // 8. Right-side Lock Notch & Reel Window Aperture
+          ctx.fillStyle = '#08080c';
+          ctx.fillRect(px + 24, ty + 2, 3, 9);
+          ctx.fillStyle = '#1c1c24';
+          ctx.fillRect(px + 25, ty + 4, 1, 5); // Tape spool lock window
         }
 
       } else {
@@ -186,7 +215,6 @@ function drawMap() {
         const cy = py + TILE / 2;
 
         if (tile === '.') {
-          // Standard glowing dots
           ctx.shadowColor = '#ff2a85';
           ctx.shadowBlur = 6;
           ctx.fillStyle = '#ff7bb3';
@@ -196,7 +224,6 @@ function drawMap() {
           ctx.shadowBlur = 0;
 
         } else if (tile === 'o') {
-          // Pulsing synthwave power stars
           const size = 8 + pulse * 2;
           ctx.shadowColor = '#00f0ff';
           ctx.shadowBlur = 12;
