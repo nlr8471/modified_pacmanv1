@@ -135,117 +135,96 @@ function collidesWithWall(entity, dir, distance) {
 function drawMap() {
   const pulse = Math.sin(performance.now() * 0.006);
 
-  // Retro 8-bit sticker label palette presets
-  const labelPalettes = [
-    { label: '#ece6d8', accent: '#ff2a85', text: '#120024' }, // Neon Pink T-120
-    { label: '#e5dec9', accent: '#00f0ff', text: '#00202e' }, // Electric Cyan
-    { label: '#f4ebd0', accent: '#f59e0b', text: '#2e1c00' }, // Gold Arcade
-    { label: '#dedede', accent: '#10b981', text: '#022c22' }, // Mint Edition
-    { label: '#ebdcf7', accent: '#a855f7', text: '#1e0038' }  // Synth Purple
+  // Label color themes for distinct VHS cassette spines
+  const tapePalettes = [
+    { labelBg: '#f2ece1', stripe: '#ff2a85', text: '#180028', badge: '#ff2a85' }, // Pink Synth
+    { labelBg: '#e6f4f8', stripe: '#00f0ff', text: '#002636', badge: '#00f0ff' }, // Cyan Hi-Fi
+    { labelBg: '#f8f1de', stripe: '#f59e0b', text: '#2e1d00', badge: '#f59e0b' }, // Gold Arcade
+    { labelBg: '#f0e6f8', stripe: '#a855f7', text: '#21003d', badge: '#a855f7' }, // Purple Retro
+    { labelBg: '#e6f7ef', stripe: '#10b981', text: '#002b1c', badge: '#10b981' }  // Mint SP
   ];
 
   for (let y = 0; y < ROWS; y++) {
-    for (let x = 0; x < COLS; x++) {
+    let x = 0;
+    while (x < COLS) {
       const tile = map[y][x];
-      const px = x * TILE;
-      const py = y * TILE + HUD_HEIGHT;
 
       if (tile === '#') {
-        // --- 8-BIT DETAILED STACKED VHS TAPES ---
-        ctx.fillStyle = '#05020a';
-        ctx.fillRect(px, py, TILE, TILE);
-
-        // Draw 2 stacked 14px high cassettes per 28px wall tile
-        for (let i = 0; i < 2; i++) {
-          const ty = py + i * 14;
-          const palette = labelPalettes[(y * 3 + x * 2 + i) % labelPalettes.length];
-
-          // 1. Black Outer Plastic Casing (28x13px)
-          ctx.fillStyle = '#121218';
-          ctx.fillRect(px, ty, TILE, 13);
-
-          // 2. 8-Bit Bevels (Top Highlight, Bottom Shadow)
-          ctx.fillStyle = '#3a3a4c';
-          ctx.fillRect(px, ty, TILE, 1); // Top light edge
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(px, ty + 12, TILE, 1); // Bottom shadow seam
-          ctx.fillRect(px, ty + 13, TILE, 1); // Gap between stacked tapes
-
-          // 3. Cassette Side Grip Ribs (Far Left Notch)
-          ctx.fillStyle = '#08080c';
-          ctx.fillRect(px + 1, ty + 2, 2, 9);
-          ctx.fillStyle = '#22222c';
-          ctx.fillRect(px + 1, ty + 3, 2, 1);
-          ctx.fillRect(px + 1, ty + 6, 2, 1);
-          ctx.fillRect(px + 1, ty + 9, 2, 1);
-
-          // 4. Paper Sticker Label (Recessed Center)
-          ctx.fillStyle = palette.label;
-          ctx.fillRect(px + 4, ty + 2, 19, 9);
-
-          // 5. Retro Label Accent Stripe
-          ctx.fillStyle = palette.accent;
-          ctx.fillRect(px + 4, ty + 2, 19, 2);
-
-          // 6. 8-Bit Simulated Text / Title Blocks (3x2 pixel blocks)
-          ctx.fillStyle = palette.text;
-          ctx.fillRect(px + 5, ty + 5, 4, 2);  // "VHS" logo block
-          ctx.fillRect(px + 10, ty + 5, 6, 1); // Title text line
-          ctx.fillRect(px + 10, ty + 7, 4, 1); // Subtitle line
-
-          // 7. Simulated Barcode / T-120 Markings (Pixel Dots)
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(px + 17, ty + 5, 1, 3);
-          ctx.fillRect(px + 19, ty + 5, 1, 3);
-          ctx.fillRect(px + 21, ty + 5, 1, 3);
-
-          // 8. Right-side Lock Notch & Reel Window Aperture
-          ctx.fillStyle = '#08080c';
-          ctx.fillRect(px + 24, ty + 2, 3, 9);
-          ctx.fillStyle = '#1c1c24';
-          ctx.fillRect(px + 25, ty + 4, 1, 5); // Tape spool lock window
+        // Find contiguous run of wall tiles horizontally
+        const runStart = x;
+        while (x < COLS && map[y][x] === '#') {
+          x++;
         }
+        const runLen = x - runStart;
 
-      } else {
-        // --- FLOOR & PELLETS ---
-        ctx.fillStyle = '#080212';
-        ctx.fillRect(px, py, TILE, TILE);
+        // Combine wall tiles into 2 or 3 tile wide tapes (56px or 84px wide)
+        let remaining = runLen;
+        let curX = runStart;
 
-        const cx = px + TILE / 2;
-        const cy = py + TILE / 2;
+        while (remaining > 0) {
+          const span = (remaining === 4) ? 2 : (remaining >= 3 ? 3 : remaining);
+          
+          const px = curX * TILE;
+          const py = y * TILE + HUD_HEIGHT;
+          const w = span * TILE;
+          const h = TILE; // 28px height for full cassette spine proportions
 
-        if (tile === '.') {
-          ctx.shadowColor = '#ff2a85';
-          ctx.shadowBlur = 6;
-          ctx.fillStyle = '#ff7bb3';
-          ctx.beginPath();
-          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
+          const palette = tapePalettes[(y * 7 + curX * 3) % tapePalettes.length];
 
-        } else if (tile === 'o') {
-          const size = 8 + pulse * 2;
-          ctx.shadowColor = '#00f0ff';
-          ctx.shadowBlur = 12;
+          // 1. Black Plastic Cassette Casing
+          ctx.fillStyle = '#101018';
+          ctx.fillRect(px, py, w, h);
+
+          // Top highlight & bottom drop shadow bevels
+          ctx.fillStyle = '#3a3a4e';
+          ctx.fillRect(px, py, w, 1);
+          ctx.fillStyle = '#040406';
+          ctx.fillRect(px, py + h - 2, w, 2);
+          // Seam separator on right end
+          ctx.fillRect(px + w - 2, py, 2, h);
+
+          // 2. Side Grip Ribs (Left End)
+          ctx.fillStyle = '#06060a';
+          ctx.fillRect(px + 1, py + 2, 2, h - 4);
+          ctx.fillStyle = '#222230';
+          ctx.fillRect(px + 1, py + 4, 2, 2);
+          ctx.fillRect(px + 1, py + 10, 2, 2);
+          ctx.fillRect(px + 1, py + 16, 2, 2);
+
+          // 3. Recessed Sticker Label
+          const labelX = px + 5;
+          const labelY = py + 3;
+          const labelW = w - 12;
+          const labelH = h - 7;
+
+          ctx.fillStyle = palette.labelBg;
+          ctx.fillRect(labelX, labelY, labelW, labelH);
+
+          // Label Color Stripe
+          ctx.fillStyle = palette.stripe;
+          ctx.fillRect(labelX, labelY, labelW, 3);
+
+          // 4. Pixel-Art "VHS" Badge (Left side of sticker)
+          ctx.fillStyle = palette.badge;
+          ctx.fillRect(labelX + 2, labelY + 5, 8, 6);
           ctx.fillStyle = '#ffffff';
+          ctx.fillRect(labelX + 3, labelY + 6, 2, 2);
+          ctx.fillRect(labelX + 5, labelY + 8, 2, 2);
+          ctx.fillRect(labelX + 7, labelY + 6, 2, 2);
 
-          ctx.beginPath();
-          ctx.moveTo(cx, cy - size);
-          ctx.lineTo(cx + size * 0.35, cy - size * 0.35);
-          ctx.lineTo(cx + size, cy);
-          ctx.lineTo(cx + size * 0.35, cy + size * 0.35);
-          ctx.lineTo(cx, cy + size);
-          ctx.lineTo(cx - size * 0.35, cy + size * 0.35);
-          ctx.lineTo(cx - size, cy);
-          ctx.lineTo(cx - size * 0.35, cy - size * 0.35);
-          ctx.closePath();
-          ctx.fill();
-          ctx.shadowBlur = 0;
-        }
-      }
-    }
-  }
-}
+          // 5. Title & Subtitle Pixel Lines (Center of sticker)
+          const titleX = labelX + 12;
+          const titleMaxW = labelW - 22;
+          if (titleMaxW > 8) {
+            ctx.fillStyle = palette.text;
+            ctx.fillRect(titleX, labelY + 5, Math.min(titleMaxW, 32), 3);
+            ctx.fillRect(titleX, labelY + 10, Math.min(titleMaxW - 6, 20), 2);
+          }
+
+          // 6. Barcode (Right side of sticker)
+          const bcX = labelX + labelW - 8;
+          if (labelW > 24) {
+            ctx.fillStyle = '#000000';
 function drawPacman(time) {
   const speedFactor = Math.hypot(player.dir.x, player.dir.y);
   player.mouth = 0.18 + Math.abs(Math.sin(time * 0.012)) * 0.24 * speedFactor;
