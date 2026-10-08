@@ -44,13 +44,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   let map = layout.map((row) => row.split(''));
 
-  function tileCenterX(tx) {
-    return tx * TILE + TILE / 2;
-  }
-
-  function tileCenterY(ty) {
-    return ty * TILE + TILE / 2;
-  }
+  function tileCenterX(tx) { return tx * TILE + TILE / 2; }
+  function tileCenterY(ty) { return ty * TILE + TILE / 2; }
 
   let pelletsLeft = 0;
   function countPellets() {
@@ -79,18 +74,11 @@ window.addEventListener('DOMContentLoaded', () => {
     { x: 11, y: 8, color: '#5bd3ff' }
   ];
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const difficulty = urlParams.get('difficulty') || 'medium';
-
-  let speedMultiplier = 1;
-  if (difficulty === 'easy') speedMultiplier = 0.5;
-  if (difficulty === 'hard') speedMultiplier = 1.4;
-
   const ghosts = ghostStarts.map((g, index) => ({
     x: tileCenterX(g.x),
     y: tileCenterY(g.y),
     radius: TILE * 0.38,
-    speed: (90 + index * 8) * speedMultiplier,
+    speed: 95 + index * 8,
     dir: [DIRS.left, DIRS.right, DIRS.up][index],
     color: g.color
   }));
@@ -101,10 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
   let previous = performance.now();
 
   function tileAtPixel(px, py) {
-    return {
-      x: Math.floor(px / TILE),
-      y: Math.floor(py / TILE)
-    };
+    return { x: Math.floor(px / TILE), y: Math.floor(py / TILE) };
   }
 
   function isWallTile(tx, ty) {
@@ -118,10 +103,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const r = entity.radius - 2;
 
     const points = [
-      [nx - r, ny - r],
-      [nx + r, ny - r],
-      [nx - r, ny + r],
-      [nx + r, ny + r]
+      [nx - r, ny - r], [nx + r, ny - r],
+      [nx - r, ny + r], [nx + r, ny + r]
     ];
 
     return points.some(([px, py]) => {
@@ -140,13 +123,14 @@ window.addEventListener('DOMContentLoaded', () => {
         const py = y * TILE;
 
         if (tile === '#') {
-          ctx.fillStyle = '#230b3b';
+          // Retro pink/magenta maze walls matching PDF reference
+          ctx.fillStyle = '#1d0a2a';
           ctx.fillRect(px, py, TILE, TILE);
-          ctx.strokeStyle = '#ff2a85';
+          ctx.strokeStyle = '#f83085';
           ctx.lineWidth = 2;
           ctx.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2);
         } else {
-          ctx.fillStyle = '#080212';
+          ctx.fillStyle = '#090212';
           ctx.fillRect(px, py, TILE, TILE);
 
           const cx = px + TILE / 2;
@@ -161,21 +145,13 @@ window.addEventListener('DOMContentLoaded', () => {
             ctx.fill();
             ctx.shadowBlur = 0;
           } else if (tile === 'o') {
-            const size = 8 + pulse * 2;
+            const size = 7 + pulse * 2;
             ctx.shadowColor = '#00f0ff';
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 10;
             ctx.fillStyle = '#ffffff';
 
             ctx.beginPath();
-            ctx.moveTo(cx, cy - size);
-            ctx.lineTo(cx + size * 0.35, cy - size * 0.35);
-            ctx.lineTo(cx + size, cy);
-            ctx.lineTo(cx + size * 0.35, cy + size * 0.35);
-            ctx.lineTo(cx, cy + size);
-            ctx.lineTo(cx - size * 0.35, cy + size * 0.35);
-            ctx.lineTo(cx - size, cy);
-            ctx.lineTo(cx - size * 0.35, cy - size * 0.35);
-            ctx.closePath();
+            ctx.arc(cx, cy, size, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
           }
@@ -196,13 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     ctx.fillStyle = '#ffd84a';
     ctx.beginPath();
-    ctx.arc(
-      player.x,
-      player.y,
-      radius,
-      angle + mouthAngle,
-      angle + Math.PI * 2 - mouthAngle
-    );
+    ctx.arc(player.x, player.y, radius, angle + mouthAngle, angle + Math.PI * 2 - mouthAngle);
     ctx.lineTo(player.x, player.y);
     ctx.closePath();
     ctx.fill();
@@ -246,7 +216,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (stateEl) {
       if (gameOver) {
-        stateEl.textContent = win ? 'You Win! Click Play Again' : 'Game Over! Click Play Again';
+        stateEl.textContent = win ? 'You Win! Refresh to replay' : 'Game Over! Refresh to retry';
         stateEl.style.color = win ? '#8cff9b' : '#ff8f8f';
       } else {
         stateEl.textContent = running ? 'Collect all pellets' : 'Press Arrow Keys to Start';
@@ -340,9 +310,7 @@ window.addEventListener('DOMContentLoaded', () => {
       const centerX = Math.abs((ghost.x - TILE / 2) % TILE) < 2;
       const centerY = Math.abs((ghost.y - TILE / 2) % TILE) < 2;
 
-      if (centerX && centerY) {
-        chooseGhostDir(ghost);
-      }
+      if (centerX && centerY) chooseGhostDir(ghost);
 
       const distance = ghost.speed * dt;
       if (!collidesWithWall(ghost, ghost.dir, distance)) {
@@ -366,7 +334,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function clear() {
-    ctx.fillStyle = '#080212';
+    ctx.fillStyle = '#090212';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
 
@@ -386,10 +354,10 @@ window.addEventListener('DOMContentLoaded', () => {
     drawHud();
 
     if (gameOver) {
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillStyle = 'rgba(0,0,0,0.65)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = '#fff';
-      ctx.font = '700 44px system-ui, sans-serif';
+      ctx.font = '700 40px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(win ? 'YOU WIN' : 'GAME OVER', canvas.width / 2, canvas.height / 2);
     }
@@ -419,7 +387,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!running && !gameOver && moved) running = true;
-
     return moved;
   }
 
